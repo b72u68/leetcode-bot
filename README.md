@@ -1,7 +1,6 @@
 # YeetCode-Bot
 Yeet away from the unemployment with Leetcode problems in your Discord channel.
 > "A LeetCode a day keeps the unemployment away"
-> <space><space><space><space>-The Internet
 
 ## Instructions
 * Python 3 is required for the bot to run
