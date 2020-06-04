@@ -41,7 +41,7 @@ class leetcodeScaper:
                 frontend_question_id = child["stat"]["frontend_question_id"]
                 total_acs = child["stat"]["total_acs"]
                 total_submitted = child["stat"]["total_submitted"]
-                acs_rate = '{0:.3f}'.format(int(total_acs) / int(total_submitted) * 100)
+                acs_rate = '{0:.2f}'.format(int(total_acs) / int(total_submitted) * 100)
 
                 self.problems.append((frontend_question_id, question_title, question_title_slug, acs_rate))
 
