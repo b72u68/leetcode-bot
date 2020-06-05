@@ -1,4 +1,3 @@
-# import subprocess
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -23,7 +22,7 @@ API_URL = 'https://leetcode.com/api/problems/'
 # Problem URL: 'https://leetcode.com/problems/' + '{problem title}'
 PROBLEM_URL = 'https://leetcode.com/problems/'
 
-class leetcodeScaper:
+class leetcodeScraper:
 
     def __init__(self, category, difficulty):
         self.category = category
@@ -41,7 +40,7 @@ class leetcodeScaper:
                 frontend_question_id = child["stat"]["frontend_question_id"]
                 total_acs = child["stat"]["total_acs"]
                 total_submitted = child["stat"]["total_submitted"]
-                acs_rate = '{0:.2f}'.format(int(total_acs) / int(total_submitted) * 100)
+                acs_rate = '{0:.3}'.format(int(total_acs) / int(total_submitted) * 100)
 
                 self.problems.append((frontend_question_id, question_title, question_title_slug, acs_rate))
 
@@ -51,22 +50,23 @@ class leetcodeScaper:
 
     def downloadProblem(self, problem):
         frontend_question_id, question_title, question_title_slug, acs_rate = problem
+        difLevel = {1:'easy', 2:'medium', 3:'hard'}
         url = PROBLEM_URL + question_title_slug
 
         try:
             driver.get(url)
 
-            # Wait 20 secs or until div with id initial-loading disappears
-            element = WebDriverWait(driver, 20).until(
-		EC.invisibility_of_element_located((By.ID, "initial-loading"))
-	    )
+            # # Wait 20 secs or until div with id initial-loading disappears
+            # element = WebDriverWait(driver, 20).until(
+		# EC.invisibility_of_element_located((By.ID, "initial-loading"))
+	    # )
 
             # Get current tab page source
             html = driver.page_source
             soup = BeautifulSoup(html, "html.parser")
 
             # Construct HTML
-            problem_title_html = f'<div id="title"><b>{frontend_question_id}. {question_title.upper()} (Acceptance Rate: {acs_rate}%)</b></div>\n' 
+            problem_title_html = f'<div id="title"><b>{frontend_question_id}. {question_title.upper()} (Acceptance Rate: {acs_rate}%)\nDIFFICULTY: {difLevel[self.difficulty].upper()}\n</b></div>\n' 
             problem_html = problem_title_html + str(soup.find("div", {"class": "content__u3I1 question-content__JfgR"})) + '<br><br><hr><br>'
             
             # # Append Contents to a HTML file
@@ -83,6 +83,6 @@ class leetcodeScaper:
             # print('[+] File converted successfully')
 
         except Exception as e:
-            print(f'Error Occurred: {e}')
+            print(f'[-] Error Occurred: {e}')
             driver.quit()
             return None
