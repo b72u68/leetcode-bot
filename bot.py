@@ -1,7 +1,7 @@
 import discord
 import configparser
 import random
-from leetcodeScaper import leetcodeScaper
+from leetcodeScraper import leetcodeScraper
 
 def read_token():
     config = configparser.ConfigParser()
@@ -25,8 +25,8 @@ async def on_message(message):
         if message.author == client.user:
             return
 
-        commands = ['!y']
-        guides = 'YeetCode Bot Command Guide\n\'!y <difficulty>\'\t\tSend problem in the given level of difficulty\n(\'easy\': 1, \'medium\': 2, \'hard\': 3)'
+        commands = ['!y', '!md']
+        guides = 'YeetCode Bot Command Guide\n\'!y <difficulty>\'\t\tSend problem in the given level of difficulty\n(\'easy\': 1, \'medium\': 2, \'hard\': 3)\n\'!md <problem id>\'\t\tMark finished problem'
 
         if message.content.startswith('!') and message.content.split()[0] not in commands:
             await message.channel.send('`Invalid commands`')
@@ -34,17 +34,40 @@ async def on_message(message):
             return
 
         if message.content.startswith('!y'):
+            
+            def read_log():
+                finishedProblems = []
+                
+                try:
+                    with open("log.txt", "r") as f:
+                        data = f.readlines()
+                        for info in data:
+                            # finishedProblems.append({"frontend_question_id":int(info.split()[0].strip()), "question_title_slug":info.split()[1].strip()})
+                            finishedProblems.append(info.split()[0].strip())
+
+                except Exception as e:
+                    print(f'[-] Error Occurred: {e}')
+                    pass
+
+                return finishedProblems
+
+            finishedProblems = read_log()
+
             # difficulties = {'easy':1, 'medium':2, 'hard':3}
             difficulty = int(message.content.split()[1])
 
-            lc = leetcodeScaper('algorithms', difficulty)
+            lc = leetcodeScraper('algorithms', difficulty)
             problemList = lc.getProblemList()
             randProblem = problemList[random.randint(0, len(problemList)-1)]
+            problemID = randProblem[0]
 
-            problem = lc.downloadProblem(randProblem)
+            while problemID in finishedProblems:
+                randProblem = problemList[random.randint(0, len(problemList)-1)]
 
-            if problem:
-                await message.channel.send(f'```{problem}```')
+            problemString = lc.downloadProblem(randProblem)
+
+            if problemString:
+                await message.channel.send(f'```{problemString}```')
 
             else:
                 await message.channel.send('`Error Occurred. Try again.`')
