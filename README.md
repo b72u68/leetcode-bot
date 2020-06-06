@@ -6,7 +6,7 @@ Yeet away from the unemployment with Leetcode problems in your Discord channel.
 
 * Python 3 is required for the bot to run
 * Required Python libraries: requests, bs4, selenium. Run `pip install -r requirements.txt` to install these libraries
-* Create Discord Bot on Discord Developer Portal and add token in `discord.ini`
+* Create Discord Bot on Discord Developer Portal and add token in `discord.ini` in `.config` directory
 
 ### Usage
 
