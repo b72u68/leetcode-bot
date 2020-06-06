@@ -25,15 +25,19 @@ async def on_message(message):
         if message.author == client.user:
             return
 
-        commands = ['!y', '!md']
-        guides = 'YeetCode Bot Command Guide\n\'!y <difficulty>\'\t\tSend problem in the given level of difficulty\n(\'easy\': 1, \'medium\': 2, \'hard\': 3)\n\'!md <problem id>\'\t\tMark finished problem'
+        commands = ['!', '!help', '!yeet', '!md']
+        guides = 'YeetCode Bot Command Guide\n\'!yeet <difficulty>\'\t\tSend problem in the given level of difficulty\n(\'easy\': 1, \'medium\': 2, \'hard\': 3)\n\'!md <problemID>\'\t\tMark problem as finished'
 
         if message.content.startswith('!') and message.content.split()[0] not in commands:
             await message.channel.send('`Invalid commands`')
             await message.channel.send(f'```{guides}```')
             return
 
-        if message.content.startswith('!y'):
+        if message.content in ('!', '!help'):
+            await message.channel.send(f'```{guides}```')
+            return
+
+        if message.content.startswith('!yeet'):
             
             def read_log():
                 finishedProblems = []
@@ -41,27 +45,30 @@ async def on_message(message):
                 try:
                     with open("log.txt", "r") as f:
                         data = f.readlines()
-                        for info in data:
-                            # finishedProblems.append({"frontend_question_id":int(info.split()[0].strip()), "question_title_slug":info.split()[1].strip()})
-                            finishedProblems.append(info.split()[0].strip())
+                        for frontend_question_id in data:
+                            finishedProblems.append(int(frontend_question_id))
 
                 except Exception as e:
                     print(f'[-] Error Occurred: {e}')
-                    pass
 
                 return finishedProblems
 
             finishedProblems = read_log()
 
             # difficulties = {'easy':1, 'medium':2, 'hard':3}
-            difficulty = int(message.content.split()[1])
+            validDiffculties = (1, 2, 3)
+            difficulty = int(message.content[len('!yeet')+1:])
+
+            if difficulty not in validDiffculties:
+                message.channel.send('`Invalid difficulty level`')
+                return
 
             lc = leetcodeScraper('algorithms', difficulty)
             problemList = lc.getProblemList()
             randProblem = problemList[random.randint(0, len(problemList)-1)]
-            problemID = randProblem[0]
+            frontend_question_id = randProblem[0]
 
-            while problemID in finishedProblems:
+            while frontend_question_id in finishedProblems:
                 randProblem = problemList[random.randint(0, len(problemList)-1)]
 
             problemString = lc.downloadProblem(randProblem)
@@ -72,6 +79,23 @@ async def on_message(message):
             else:
                 await message.channel.send('`Error Occurred. Try again.`')
             
+            return
+
+        if message.content.startswith('!md'):
+
+            def write_log(frontend_question_id):
+                try:
+                    with open("log.txt", "a") as f:
+                        f.write(f'{frontend_question_id}')
+                        f.close()
+
+                except Exception as e:
+                    print(f'[-] Error Occurred:: {e}')
+
+            frontend_question_id = message.content[len('!md')+1:] 
+            write_log(frontend_question_id)
+            message.channel.send(f'`Marked problem {frontend_question_id} as DONE`')
+
             return
 
 client.run(token)
