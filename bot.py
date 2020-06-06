@@ -26,7 +26,10 @@ async def on_message(message):
             return
 
         commands = ['!', '!help', '!yeet', '!md']
-        guides = 'YeetCode Bot Command Guide\n\'!yeet <difficulty>\'\t\tSend problem in the given level of difficulty\n(\'easy\': 1, \'medium\': 2, \'hard\': 3)\n\'!md <problemID>\'\t\tMark problem as finished'
+        guides = '''YeetCode Bot Command Guide
+        \'!yeet <difficulty>\'      Send problem in the given level of difficult
+                    (\'easy\': 1, \'medium\': 2, \'hard\': 3)
+        \'!md <problemID>\'         Mark problem as finished'''
 
         if message.content.startswith('!') and message.content.split()[0] not in commands:
             await message.channel.send('`Invalid commands`')
