@@ -5,7 +5,7 @@ from leetcodeScraper import leetcodeScraper
 
 def read_token():
     config = configparser.ConfigParser()
-    config.read('discord.ini')
+    config.read(r'./.config/discord.ini')
     return config['DISCORD']['bot_token']
 
 client = discord.Client()
