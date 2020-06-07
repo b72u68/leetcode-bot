@@ -34,7 +34,6 @@ class leetcodeScraper:
     def getProblemList(self):
         problems_json = requests.get(API_URL + self.category).content
         problems_json = json.loads(problems_json)
-        # difficultyLevel = {'1':'easy', '2':'medium', '3':'hard'}
 
         for child in problems_json["stat_status_pairs"]:
             if not child["paid_only"]:
@@ -50,9 +49,7 @@ class leetcodeScraper:
 
         self.problems = sorted(self.problems, key=lambda x: (x['frontend_question_id']))
 
-        return self.problems
-
-    def downloadProblem(self, problem):
+    def getProblem(self, problem):
         difficulty, frontend_question_id, question_title, question_title_slug, acs_rate = problem['difficulty'], problem['frontend_question_id'], problem['question_title'], problem['question_title_slug'], problem['acs_rate']
 
         difLevel = {1:'easy', 2:'medium', 3:'hard'}
@@ -72,7 +69,7 @@ class leetcodeScraper:
             soup = BeautifulSoup(html, "html.parser")
 
             # Construct HTML
-            problem_title_html = f'<div id="title"><b>{frontend_question_id}. {question_title.upper()} (Acceptance Rate: {acs_rate}%)\nDIFFICULTY: {difLevel[difficulty].upper()}\n</b></div>\n' 
+            problem_title_html = f'<div id="title"><b>{frontend_question_id}. {question_title.upper()} (Acceptance Rate: {acs_rate}%)\nQUESTION TITLE SLUG: {question_title_slug}\nDIFFICULTY: {difLevel[difficulty].upper()}\n</b></div>\n' 
             problem_html = problem_title_html + str(soup.find("div", {"class": "content__u3I1 question-content__JfgR"})) + '<br><br><hr><br>'
             
             # # Append Contents to a HTML file
@@ -93,36 +90,12 @@ class leetcodeScraper:
             driver.quit()
             return None
 
-    def searchByID(self, frontend_question_id):
-        left, right = 0, len(self.problems)
-
-        while left < right:
-            mid = (right - left)//2
-
-            if self.problems[mid]['frontend_question_id'] == frontend_question_id:
-                return self.problems[mid]
-
-            elif self.problems[mid]['frontend_question_id'] < frontend_question_id:
-                right = mid - 1
-
-            else:
-                left = mid + 1
-
-        return None
-
-    def getSolutionLink(self, frontend_question_id, language):
+    def getSolution(self, question_title_slug, language):
         validLanguages = ['python', 'c', 'java', 'python-3', 'cpp']
 
         if language not in validLanguages:
             return None
 
-        problem = self.searchByID(frontend_question_id)
-        print(problem)
-
-        if not problem:
-            return None
-
-        question_title_slug = problem['question_title_slug']
         url = PROBLEM_URL + question_title_slug + DISCUSS_URL + language
 
         try:
@@ -138,34 +111,55 @@ class leetcodeScraper:
             soup = BeautifulSoup(html, "html.parser")
 
             solutionLink_html = soup.find("a", {"class": "title-link__1ay5"}, href=True)
-            return solutionLink_html
+            if solutionLink_html:
+                solutionLink = solutionLink_html["href"]
+                url = "https://leetcode.com" + solutionLink
 
+                driver.get(url)
+
+                # Wait 20 secs or until div with id initial-loading disappears
+                element = WebDriverWait(driver, 20).until(
+                    EC.invisibility_of_element_located((By.ID, "initial-loading"))
+                )
+                
+                html = driver.page_source
+                soup = BeautifulSoup(html, "html.parser")
+
+                solution_html = soup.find("div", {"class": "discuss-markdown-container"})
+                
+                soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
+
+                question_title = question_title_slug.replace('-', ' ').upper()
+                solution = question_title + ' SOLUTION (' + language.replace('-', ' ') + ')\n\n' + soup.get_text()
+
+                return solution 
+                
         except Exception as e:
             print(f'[-] Error Occurred: {e}')
             driver.quit()
             return None
 
-    def downloadSolution(self, solutionLink):
-        url = 'https://leetcode.com' + solutionLink
+    # def downloadSolution(self, solutionLink):
+        # url = 'https://leetcode.com' + solutionLink
 
-        try:
-            driver.get(url)
+        # try:
+            # driver.get(url)
 
-            # Wait 20 secs or until div with id initial-loading disappears
-            element = WebDriverWait(driver, 20).until(
-                EC.invisibility_of_element_located((By.ID, "initial-loading"))
-            )
+            # # Wait 20 secs or until div with id initial-loading disappears
+            # element = WebDriverWait(driver, 20).until(
+                # EC.invisibility_of_element_located((By.ID, "initial-loading"))
+            # )
 
-            # get current tab page source
-            html = driver.page_source
-            soup = BeautifulSoup(html, "html.parser")
+            # # get current tab page source
+            # html = driver.page_source
+            # soup = BeautifulSoup(html, "html.parser")
 
-            solution_html = '\n' + str(soup.find("div", {"class": "discuss-markdown-container"})) + '<br><br><hr><br>'
+            # solution_html = soup.find("div", {"class": "discuss-markdown-container"})
 
-            soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
-            return soup.get_text()
+            # soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
+            # return soup.get_text()
 
-        except Exception as e:
-            print(f'[-] Error Occurred: {e}')
-            driver.quit()
-            return None
+        # except Exception as e:
+            # print(f'[-] Error Occurred: {e}')
+            # driver.quit()
+            # return None
