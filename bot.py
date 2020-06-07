@@ -11,6 +11,9 @@ def read_token():
 client = discord.Client()
 token = read_token()
 
+lc = leetcodeScraper("algorithms")
+lc.getProblemList()
+
 @client.event
 async def on_ready():
     print(f'[+] {client.user} has connected to Discord!')
@@ -25,11 +28,13 @@ async def on_message(message):
         if message.author == client.user:
             return
 
-        commands = ['!', '!help', '!yeet', '!md']
+        commands = ['!', '!help', '!yeet', '!md', '!sl']
         guides = '''YeetCode Bot Command Guide
-        \'!yeet <difficulty>\'      Send problem in the given level of difficult
-                    (\'easy\': 1, \'medium\': 2, \'hard\': 3)
-        \'!md <problemID>\'         Mark problem as finished'''
+    \'!yeet <difficulty>\'              Send problem in <difficulty>
+            (\'easy\': 1, \'medium\': 2, \'hard\': 3)
+    \'!md <problemID>\'                 Mark problem as finished
+    \'!sl <problemSlug> <language>\'    Send solution
+            (language: python, python-3, c, cpp, java)'''
 
         if message.content.startswith('!') and message.content.split()[0] not in commands:
             await message.channel.send('`Invalid commands`')
@@ -48,7 +53,8 @@ async def on_message(message):
                 try:
                     with open("log.txt", "r") as f:
                         data = f.readlines()
-                        for frontend_question_id in data:
+                        for questionInfo in data:
+                            frontend_question_id = questionInfo.split()[0].strip()
                             finishedProblems.append(int(frontend_question_id))
 
                 except Exception as e:
@@ -66,39 +72,74 @@ async def on_message(message):
                 message.channel.send('`Invalid difficulty level`')
                 return
 
-            lc = leetcodeScraper('algorithms', difficulty)
-            problemList = lc.getProblemList()
-            randProblem = problemList[random.randint(0, len(problemList)-1)]
-            frontend_question_id = randProblem[0]
+            for problem in lc.problems:
+                if problem['difficulty'] == difficulty and problem['frontend_question_id'] not in finishedProblems:
+                    problemText = lc.getProblem(problem)
 
-            while frontend_question_id in finishedProblems:
-                randProblem = problemList[random.randint(0, len(problemList)-1)]
+                    if problemText:
+                        await message.channel.send(f'```{problemText}```')
 
-            problemString = lc.downloadProblem(randProblem)
+                    else:
+                        await message.channel.send('`Error Occurred. Try again.`')
 
-            if problemString:
-                await message.channel.send(f'```{problemString}```')
+                    break
 
-            else:
-                await message.channel.send('`Error Occurred. Try again.`')
+            # randProblem = problemList[random.randint(0, len(problemList)-1)]
+            # frontend_question_id = randProblem['frontend_question_id']
+
+            # while frontend_question_id in finishedProblems:
+                # randProblem = problemList[random.randint(0, len(problemList)-1)]
+
+            # problemString = lc.getProblem(randProblem)
+
+            # if problemString:
+                # await message.channel.send(f'```{problemString}```')
+
+            # else:
+                # await message.channel.send('`Error Occurred. Try again.`')
             
             return
 
         if message.content.startswith('!md'):
 
-            def write_log(frontend_question_id):
+            def write_log(frontend_question_id, question_title_slug):
                 try:
                     with open("log.txt", "a") as f:
-                        f.write(f'{frontend_question_id}')
+                        f.write(f'{frontend_question_id}    {question_title_slug}')
                         f.close()
 
                 except Exception as e:
                     print(f'[-] Error Occurred:: {e}')
 
             frontend_question_id = message.content[len('!md')+1:] 
-            write_log(frontend_question_id)
-            message.channel.send(f'`Marked problem {frontend_question_id} as DONE`')
 
-            return
+            question_title_slug = None
+
+            for problem in lc.problems:
+                if problem['frontend_question_id'] == frontend_question_id:
+                    question_title_slug = problem['question_title_slug']
+
+            if question_title_slug:
+                write_log(frontend_question_id, question_title_slug)
+                message.channel.send(f'`Marked problem {frontend_question_id}. {question_title_slug} as DONE`')
+                return
+
+            else:
+                message.channel.send(f'`Invalid problem ID. Try again.`')
+                return
+
+        if message.content.startswith('!sl'):
+            question_title_slug = message.content.split()[1].strip()
+            language = message.content.split()[2].strip()
+
+            solution = lc.getSolution(question_title_slug, language)
+
+            if solution:
+                await message.channel.send(f'```{solution}```')
+                return
+
+            else:
+                await message.channel.send('`Error Occurred. Try again.`')
+                return
 
 client.run(token)
