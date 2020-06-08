@@ -5,7 +5,7 @@ from leetcodeScraper import leetcodeScraper
 
 def read_token():
     config = configparser.ConfigParser()
-    config.read(r'./.config/discord.ini')
+    config.read(f'./.config/discord.ini')
     return config['DISCORD']['bot_token']
 
 client = discord.Client()
@@ -135,8 +135,13 @@ async def on_message(message):
             solution = lc.getSolution(question_title_slug, language)
 
             if solution:
-                await message.channel.send(f'```{solution}```')
-                return
+                if len(solution) < 2000:
+                    await message.channel.send(f'```{solution}```')
+                    return
+
+                else:
+                    await message.channel.send('`Discord cannot send more than 2000 characters.`')
+                    return
 
             else:
                 await message.channel.send('`Error Occurred. Try again.`')
