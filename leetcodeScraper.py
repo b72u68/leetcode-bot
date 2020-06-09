@@ -30,6 +30,7 @@ class leetcodeScraper:
     def __init__(self, category):
         self.category = category
         self.problems = []
+        self.solutions = []
 
     def getProblemList(self):
         problems_json = requests.get(API_URL + self.category).content
@@ -96,6 +97,7 @@ class leetcodeScraper:
         if language not in validLanguages:
             return None
 
+        question_title = question_title_slug.replace('-', ' ').upper()
         url = PROBLEM_URL + question_title_slug + DISCUSS_URL + language
 
         try:
@@ -110,29 +112,34 @@ class leetcodeScraper:
             html = driver.page_source
             soup = BeautifulSoup(html, "html.parser")
 
-            solutionLink_html = soup.find("a", {"class": "title-link__1ay5"}, href=True)
-            if solutionLink_html:
-                solutionLink = solutionLink_html["href"]
-                url = "https://leetcode.com" + solutionLink
+            self.solution = soup.find_all("a", {"class": "title-link__1ay5"}, href=True)
 
-                driver.get(url)
+            if self.solution:
+                for solutionLink_html in self.solution:
+                    solutionLink = solutionLink_html["href"]
+                    url = "https://leetcode.com" + solutionLink
 
-                # Wait 20 secs or until div with id initial-loading disappears
-                element = WebDriverWait(driver, 20).until(
-                    EC.invisibility_of_element_located((By.ID, "initial-loading"))
-                )
-                
-                html = driver.page_source
-                soup = BeautifulSoup(html, "html.parser")
+                    driver.get(url)
 
-                solution_html = soup.find("div", {"class": "discuss-markdown-container"})
-                
-                soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
+                    # Wait 20 secs or until div with id initial-loading disappears
+                    element = WebDriverWait(driver, 20).until(
+                        EC.invisibility_of_element_located((By.ID, "initial-loading"))
+                    )
+                    
+                    html = driver.page_source
+                    soup = BeautifulSoup(html, "html.parser")
 
-                question_title = question_title_slug.replace('-', ' ').upper()
-                solution = question_title + ' SOLUTION (' + language.replace('-', ' ') + ')\n\n' + soup.get_text()
+                    solution_html = soup.find("div", {"class": "discuss-markdown-container"})
+                    soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
 
-                return solution 
+                    if len(soup.get_text()) < 2000:
+
+                        solution = question_title + ' SOLUTION (' + language.replace('-', ' ') + ')\n\n' + soup.get_text()
+
+                        return solution 
+
+            else:
+                return None
                 
         except Exception as e:
             print(f'[-] Error Occurred: {e}')
