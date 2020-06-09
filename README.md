@@ -10,8 +10,9 @@ Yeet away from the unemployment with Leetcode problems in your Discord channel.
 
 ### Usage
 
-* Run the bot LOCALLY. Run `python3 bot.py`
+* Run the bot LOCALLY. Simply run `python3 bot.py`
 
 ### TODO 
 
 - [ ] Add search feature for the bot (for learning Data Structures and Algorithms) 
+- [x] Add get solution feature
