@@ -133,7 +133,6 @@ class leetcodeScraper:
                     soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
 
                     if len(soup.get_text()) < 2000:
-
                         solution = question_title + ' SOLUTION (' + language.replace('-', ' ') + ')\n\n' + soup.get_text()
 
                         return solution 
