@@ -13,7 +13,7 @@ Yeet away from the unemployment with Leetcode problems in your Discord channel.
 * Run the bot LOCALLY. Simply run `python3 bot.py`
 * Bot Commands
     * `!help` or `!`: Get command menu
-    * `!yeet <difficulty>`: Send problem in <difficulty> level
+    * `!yeet <difficulty>`: Send problem in difficulty level
     * `!md <problemID>`: Mark problem as done/completed
     * `!sl <problemTitleSlug> <language>`: Send solution
 
