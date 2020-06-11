@@ -1,4 +1,5 @@
 # YeetCode-Bot
+![alt text](https://github.com/b72u68/leetcode-bot/blob/master/yeetcode.png)
 Yeet away from the unemployment with Leetcode problems in your Discord channel.
 > "A LeetCode a day keeps the unemployment away"
 
