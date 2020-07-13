@@ -144,28 +144,3 @@ class leetcodeScraper:
             print(f'[-] Error Occurred: {e}')
             driver.quit()
             return None
-
-    # def downloadSolution(self, solutionLink):
-        # url = 'https://leetcode.com' + solutionLink
-
-        # try:
-            # driver.get(url)
-
-            # # Wait 20 secs or until div with id initial-loading disappears
-            # element = WebDriverWait(driver, 20).until(
-                # EC.invisibility_of_element_located((By.ID, "initial-loading"))
-            # )
-
-            # # get current tab page source
-            # html = driver.page_source
-            # soup = BeautifulSoup(html, "html.parser")
-
-            # solution_html = soup.find("div", {"class": "discuss-markdown-container"})
-
-            # soup = BeautifulSoup(solution_html.encode(encoding="utf-8"), features="html.parser")
-            # return soup.get_text()
-
-        # except Exception as e:
-            # print(f'[-] Error Occurred: {e}')
-            # driver.quit()
-            # return None
